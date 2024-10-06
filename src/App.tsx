@@ -1,35 +1,74 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import './App.css';
+import './index.css';
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+type TodoType = {
+  id: string;
+  todoText: string;
+  isChecked: boolean
 }
 
-export default App
+const App = () => {
+  const [todos, setTodos] = useState<Array<TodoType>>([]);
+  const [currentTodo, setCurrentTodo] = useState<string | undefined>('');
+
+  const addTodo = (todoText: string | undefined) => {
+    if (!todoText) return;
+    const newTodo = {
+      id: crypto.randomUUID(),
+      isChecked: false,
+      todoText,
+    };
+    setTodos([...todos, newTodo]);
+    setCurrentTodo('');
+  };
+  const onCurrentTodoChange = (e) => {
+    setCurrentTodo(e.currentTarget.value);
+  };
+
+  const onChangeTodoCheckedStatus = (id, isChecked) => {
+    console.log(isChecked, 'isChecked');
+    console.log(id, 'id');
+    const newTodos = todos.map(todo => todo.id === id ? { ...todo, isChecked } : todo);
+    setTodos(newTodos);
+  };
+
+  const removeTodo = (todoId: string) => {
+    const newTodos = todos.filter(todo => todo.id !== todoId);
+    setTodos(newTodos);
+  };
+
+  const removeTodos = () => setTodos([]);
+  return (
+    <div>
+      <div style={{ marginBottom: '16px' }}><input onKeyDown={(e) => {
+        if (e.key === 'Enter' && !!currentTodo) addTodo(currentTodo);
+      }} type="text" onChange={onCurrentTodoChange} value={currentTodo}
+                                                   style={{ border: '1px solid black' }} />
+      </div>
+      <div style={{ marginBottom: '32px' }}>
+        <button onClick={(e) => addTodo(currentTodo)}>Add
+        </button>
+      </div>
+      <div style={{ marginBottom: '32px' }}>{todos.map(todo => {
+        return (
+          <div key={crypto.randomUUID()} className="bg-blue-500 text-white p-4"
+               style={{ display: 'flex', marginBottom: '8px' }}>
+            <div style={{ margin: '0 6px' }}><input type="checkbox" checked={todo.isChecked}
+                                                    onChange={(e) => onChangeTodoCheckedStatus(todo.id, e.currentTarget.checked)} />
+            </div>
+            <div><span style={{ verticalAlign: 'top' }}>{todo.todoText}</span></div>
+            <div>
+              <button onClick={() => removeTodo(todo.id)}>Remove todo</button>
+            </div>
+          </div>
+        );
+      })}</div>
+      {!!todos.length && <div>
+        <button onClick={removeTodos}>Remove todos</button>
+      </div>}
+    </div>
+  );
+};
+
+export default App;
